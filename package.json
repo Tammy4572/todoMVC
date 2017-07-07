@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "dependencies": {
+    "express": "^4.15.3",
+    "bluebird": "^3.5.0",
+    "mongoose": "^4.10.8"
+  }
+}
