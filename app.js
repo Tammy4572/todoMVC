@@ -1,12 +1,14 @@
 const fs = require('fs');
 const path = require('path');
-const mongoose = require('mongoose');
-const ToDos = require('./models/todos');
-const bodyParser = require('body-parser');
-mongoose.Promise = require('bluebird');
 const express = require('express');
+const mongoose = require('mongoose');
+mongoose.Promise = require('bluebird');
+const Todos = require('./models/todos');
+const bodyParser = require('body-parser');
+const router = express.Router();
 
 const app = express();
+app.use(bodyParser.json());
 
 mongoose.connect('mongodb://localhost:27017/todoMVC');
 
@@ -17,8 +19,9 @@ app.get('/',  function(request, response) {
     response.sendFile(__dirname + "/static/index.html");
 });
 
+//returns a JSON array of todo items
 app.get('/api/todos', async (request, response) => {
-    var results = await ToDos.find();
+    var results = await Todos.find();
     if(!results) {
         response.status(404);
         return response.end();
@@ -26,9 +29,10 @@ app.get('/api/todos', async (request, response) => {
     response.json(results);
 });
 
+//get a specific todo item
 app.get('/api/todos/:id', async (request, response) => {
     var id = request.params.id;
-    var todo = await ToDos.find({ _id: id});
+    var todo = await Todos.find({ _id: id});
 
     if (!todo) {
         response.status(404);
@@ -37,10 +41,11 @@ app.get('/api/todos/:id', async (request, response) => {
     return response.json(todo);
 });
 
+//return a saved todo JSON item
 app.post('/api/todos', async(request, response) => {
-    var newTodo = new ToDos({
+    var newTodo = new Todos({
         title: request.body.title,
-        order: await ToDos.count() +1,
+        order: await Todos.count() +1,
         completed: false
     })
     newTodo.save();
@@ -48,30 +53,28 @@ app.post('/api/todos', async(request, response) => {
     return response.json(newTodo);
 });
 
+//update a todo item - returns the modified todo item
 app.put('/api/todos/:id', async (request, response) => {
     var id = request.params.id;
-    var title = request.body.title;
-    await ToDos.findOneAndUpdate({ _id: id},
+    let title = request.body.title;
+    await Todos.findOneAndUpdate({ _id: id },
         {
             $set: {
-                title: title
+                title: title,
+                completed: completed
             }
         }
     );
-    var updated = await ToDos.find({ _id: id});
+    let updated = await Todos.find({ _id: id })
+
     return response.json(updated);
 });
 
-app.patch('/api/todos/:id', (request, response) => {
-    var id = request.params.id;
-    var updateObject = req.body;
-    Todos.title.update({ _id : ObjectId(id)}, { $set: updateObject});
-});
-
+//delete a todo item - returns the todo item that was deleted
 app.delete('/api/todos/:id', async (request, response) => {
     var id = request.params.id;
-    var todo = await ToDos.findOne({ _id: id});
-    var deleted = await ToDos.deleteOne({ _id: id});
+    var todo = await Todos.findOne({ _id: id});
+    var deleted = await Todos.deleteOne({ _id: id});
     return response.json(todo);
 });
 
