@@ -1,20 +1,38 @@
+const webpack = require('webpack');
+const webpackDevMiddleware = require('webpack-dev-middleware');
+const webpackConfig = require('./webpack.config.js');
+
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
 const ToDos = require('./models/todos');
 const bodyParser = require('body-parser');
 mongoose.Promise = require('bluebird');
-const express = require('express');
 
+const express = require('express');
+// const blue = require('./controllers');
 const app = express();
 
 mongoose.connect('mongodb://localhost:27017/todoMVC');
+const compiler = webpack(webpackConfig);
 
-app.use('/static', express.static('static'));
+app.use(express.static(__dirname + '/public'));
+
+app.use(webpackDevMiddleware(compiler, {
+    hot: true,
+    filename: 'bundle.js',
+    publicPath: '/',
+    stats: {
+        colors: true,
+    },
+    historyApiFallback: true,
+}));
+
+// app.use('/public', express.static('public'));
 app.use(bodyParser.json());
 
 app.get('/',  function(request, response) {
-    response.sendFile(__dirname + "/static/index.html");
+    response.sendFile(__dirname + "./index.html");
 });
 
 app.get('/api/todos', async (request, response) => {
