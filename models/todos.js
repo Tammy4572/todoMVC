@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
+    // Todos = mongoose.model('Todos');
 
-const todoScheme = new mongoose.Schema({
+const todoSchema = new mongoose.Schema({
     title: { type: String, required: true },
-    order: { type: Number, default: 1 },
+    order: { type: Number, required: true },
     completed: { type: Boolean, default: false }
 });
 
-const ToDos = mongoose.model('ToDos', todoScheme);
+const Todos = mongoose.model('Todos', todoSchema);
 
-module.exports = ToDos;
+module.exports = Todos;
